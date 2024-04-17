@@ -60,7 +60,10 @@
         <!-- Validate button -->
         <button class="button2" type="button" id="buttonValidate" switch="validate" onclick="checkRawStatementContent()">
             Validate 'Original Statement' input (checks for imbalanced parentheses)
-            and copy validated content into 'Encoded Statement' field</button></br></br>
+            and copy validated content into 'Encoded Statement' field</button><br>
+        <div class="blueButton" type="button" id="apiModalButton" style="margin-top:10px;">
+            IG2NLP Automation Interface</div><br>
+        <div id="automationMessage"></div>
         <script>
             /*
             Validates content of 'Original Statement' field by testing for imbalanced parentheses
@@ -294,23 +297,40 @@
 
             // Toggle button for visualization
             function visualToggle() {
-                visual = localStorage.getItem("visual")
-                console.log(localStorage.getItem("visual"))
-                buttons = document.getElementsByClassName("buttons")
-                if (visual == "false")
+                visual = localStorage.getItem("visual");
+                console.log(localStorage.getItem("visual"));
+                buttons = document.getElementsByClassName("buttons");
+                if (visual == "false") {
                     // Toggle the editor buttons' visibility
                     for (let i = 0; i < buttons.length; i++) {
-                        buttons[i].classList.remove('hidden')
-                        editor.session.setMode("ace/mode/igscriptnotation")
-                        localStorage.setItem("visual", "true")
+                        buttons[i].classList.remove('hidden');
+                        editor.session.setMode("ace/mode/igscriptnotation");
                     }
-                else 
+                    localStorage.setItem("visual", "true");
+                } else {
                     // Toggle the editor buttons' visibility
                     for (let i = 0; i < buttons.length; i++) {
-                        buttons[i].classList.add('hidden')
+                        buttons[i].classList.add('hidden');
                         editor.session.setMode("ace/mode/text");
-                        localStorage.setItem("visual", "false")
-                    }  
+                    }
+                    localStorage.setItem("visual", "false");
+                }
+            };
+
+            // Set a local storage item based on a checkbox and a provided key
+            function checkBoxLocalStorage(checkbox, storageItem) {
+                localStorageItem = localStorage.getItem(storageItem);
+                if (checkbox.checked == true) {
+                    localStorage.setItem(storageItem, "true");
+                } else {
+                    localStorage.setItem(storageItem, "false");
+                }
+            };
+
+            // Set a local storage item based on a selection input and a provided key
+            function selectLocalStorage(selection, storageItem) {
+                localStorageItem = localStorage.getItem(storageItem);
+                localStorage.setItem(storageItem, selection.value);
             };
 
             // loading for visualization
@@ -357,6 +377,193 @@
             document.getElementById("keybinds").addEventListener("click", function() {
                 document.getElementById("keybindModal").showModal();
             });
+
+            // API modal
+            document.getElementById("apiModalButton").addEventListener("click", function() {
+                // Get local storage variables
+                // Coreference resolution
+                coref = localStorage.getItem("coref");
+                checkBox = document.getElementById("corefRes")
+                switch (coref) {
+                    case "false":
+                        checkBox.checked = false;
+                        break;
+                    case "true":
+                        checkBox.checked = true;
+                        break;
+                    default:
+                        localStorage.setItem("coref", "false")
+                        checkBox.checked = false;
+                        break;
+                }
+
+                // Semantic Annotations
+                semantic = localStorage.getItem("semantic");
+                checkBox = document.getElementById("semanticAnno")
+                switch (semantic) {
+                    case "false":
+                        checkBox.checked = false;
+                        break;
+                    case "true":
+                        checkBox.checked = true;
+                        break;
+                    default:
+                        localStorage.setItem("semantic", "false")
+                        checkBox.checked = false;
+                        break;
+                }
+
+                // Semantic Number Annotations
+                semanticNumber = localStorage.getItem("semanticNumber");
+                checkBox = document.getElementById("semanticNumber")
+                switch (semanticNumber) {
+                    case "false":
+                        checkBox.checked = false;
+                        break;
+                    case "true":
+                        checkBox.checked = true;
+                        break;
+                    default:
+                        localStorage.setItem("semanticNumber", "false")
+                        checkBox.checked = false;
+                        break;
+                }
+
+                statementType = localStorage.getItem("statementType")
+                statementElem = document.getElementById("statementType")
+                switch (statementType) {
+                    case "regulative":
+                        document.getElementById(statementType).selected = "true";
+                        break;
+                    case "constitutive":
+                        document.getElementById(statementType).selected = "true";
+                        break;
+                    case "both":
+                        document.getElementById(statementType).selected = "true";
+                        break;
+                    default:
+                        localStorage.setItem("statementType","regulative")
+                        statementElem.value="regulative";
+                        break;
+                }
+                
+                // Hide all previous errors
+                let requestError = document.getElementById("requestError");
+                    requestError.innerHTML = ""
+
+                // Show the modal
+                document.getElementById("ig2nlpAutomation").showModal();
+            });
+
+            function requestSend(){
+                // Remove old error message
+                let requestError = document.getElementById("requestError");
+                let commentField = document.getElementById("automationMessage");
+                requestError.innerHTML = "";
+                reqData = Object.create(null);
+                // Get contents of on-site elements
+                try {
+                    reqData["stmtId"] = document.getElementById("stmtId").value
+                }
+                catch {
+                    reqData["stmtId"] = ""
+                }
+                reqData["origStmt"] = document.getElementById("rawStmt").value
+                //localStorage.getItem("rawStmt")
+
+                // get localstorage data
+                coref = localStorage.getItem("coref")
+                if (coref == "true") {coref = true} else {coref=false}
+                semantic = localStorage.getItem("semantic")
+                if (semantic == "true") {semantic = true} else {semantic=false}
+                semanticNumber = localStorage.getItem("semanticNumber")
+                if (semanticNumber == "true") {semanticNumber = true} else {semanticNumber=false}
+
+                // Set the matching parameters
+                reqData["matchingParams"] = {}
+                reqData["matchingParams"]["coref"] = coref
+                reqData["matchingParams"]["semantic"] = semantic
+                reqData["matchingParams"]["semanticNumber"] = semanticNumber
+                reqData["apiVersion"] = 0.1
+                reqData=[reqData]
+
+                // Send the post request
+                fetch("http://127.0.0.1:5000/ig2nlp", {
+                    method: 'POST',
+                    body: JSON.stringify(reqData),
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json; charset=UTF-8'
+                    }
+                }).then(response => 
+                    response.json().then(data => ({
+                        jsonData: data,
+                        status: response.status
+                    })).then(response => {
+
+                    // Handle request errors (non 200 status codes)
+                    if (response.status != 200) {
+                        requestError.innerHTML = "Error: " + response.jsonData.error + "<br><br>";
+                        return;
+                    }
+
+                    // Update the contents of ace.js and the backend textfield
+                    statementType = document.getElementById("statementType")
+                    console.log(statementType)
+                    console.log(response.jsonData)
+                    if (statementType.value == "regulative"){
+                        // Populate the editor
+                        editor.setValue(response.jsonData[0]["encodedStmtReg"]);
+                        // Ensure that content in hidden text area is synchronized
+                        copyEditorContentToTextArea();
+                        if (response.jsonData[0]["commentReg"] != ""){
+                            commentField.innerHTML = "Automation comment: " + 
+                                response.jsonData[0]["commentReg"];
+                        } else {
+                            commentField.innerHTML = ""
+                        }
+                    } else if (statementType.value == "constitutive") {
+                        // Populate the editor
+                        editor.setValue(response.jsonData[0]["encodedStmtConst"]);
+                        // Ensure that content in hidden text area is synchronized
+                        copyEditorContentToTextArea();
+                        if (response.jsonData[0]["commentConst"] != ""){
+                            commentField.innerHTML = "Automation comment: " + 
+                                response.jsonData[0]["commentConst"];
+                        } else {
+                            commentField.innerHTML = ""
+                        }
+                    } else {
+                        // Populate the editor
+                        editor.setValue(response.jsonData[0]["encodedStmtReg"]+"\n\n"+
+                        response.jsonData[0]["encodedStmtConst"]);
+                        // Ensure that content in hidden text area is synchronized
+                        copyEditorContentToTextArea();
+                        if (response.jsonData[0]["commentConst"] != "" || 
+                            response.jsonData[0]["commentReg"] != "" ){
+                            comment = ""
+                            if (response.jsonData[0]["commentReg"] != "") {
+                                comment += "<br>Regulative comment(s): " + 
+                                    response.jsonData[0]["commentReg"];
+                            }
+                            if (response.jsonData[0]["commentConst"] != "") {
+                                comment += "<br>Constitutive comment(s): " + 
+                                    response.jsonData[0]["commentConst"];
+                            }
+                            commentField.innerHTML = comment
+                        } else {
+                            commentField.innerHTML = ""
+                        }
+                    }
+                    closeModal("ig2nlpAutomation")
+                }))
+                // Handle any other errors
+                .catch(function(error){
+                    console.log("Request error: ", error)
+                    requestError.innerHTML = 
+                        "Error sending request. Please try again at a later time. <br><br>";
+                })
+            }
 
             // Function for closing modals
             function closeModal(modalId){
@@ -716,13 +923,17 @@
                 link.href = window.location.pathname + linkParameter;
             }
 
-            // Keybinds for read only mode
+            // Keybinds
             document.addEventListener("keydown", function(event) {
                 // Enables the Enter key as an interact option for all divs with the "button" class
                 if (event.key == "Enter" && event.target.classList.contains("button")) {
                     event.target.click();
                     return
                 }
+                if (event.key == "Enter" && event.target.classList.contains("button")) {
+                     console.log(event.target, event.target.classList, event.target.classList.contains("button"))
+                }
+                // Keybinds for the editors "read only" mode
                 if (editor.getReadOnly()) {
                     // Enable undo and redo
                     if (event.ctrlKey || event.cmdKey) {
@@ -864,6 +1075,71 @@
             Other Keybindings are also supported. Such as copying and pasting in the editor and default undo and redo. <br>
             <div class="button" role="button" aria-pressed="false" tabindex="0" id="keybindModalClose" style="float:right" autofocus onclick="closeModal('keybindModal')">Close</div>
         </dialog>
+
+        <!-- Modal for handling ig2nlp automation, opens from a button on the page -->
+        <dialog id="ig2nlpAutomation">
+            <div style="display:inline-block">
+            <h2 style="margin:auto">IG2NLP Automation</h2>
+         
+            NLP based automatic annotation. <br>
+            Encodes the statement as both Regulative and Constitutive. <br>
+            You will be prompted to decide whether to use one of the annotations.<br><br>
+   
+            * The automatic annotations may be inaccurate.<br><br>
+            
+            <!--
+            <span id="apiVersionLabel">API Version:</span>
+            <select name="apiVersion" id="apiVersion" aria-labelledby="apiVersionLabel">
+                <option value="0.1">Version 0.1</option>
+                <option value="1">Version 1</option>
+            </select>
+            -->
+            <span id="statementTypeLabel">Statement type:</span>
+            <select name="statementType" id="statementType" aria-labelledby="statementTypeLabel"
+                onchange="selectLocalStorage(this, 'statementType')">
+                <option value="regulative" id="regulative">Regulative</option>
+                <option value="constitutive" id="constitutive">Constitutive</option>
+                <option value="both" id="both">Both</option>
+            </select>
+
+            <input id="corefRes" name="corefRes" type="checkbox" 
+            onchange="checkBoxLocalStorage(this, 'coref')"/>
+            <label for="corefRes">Coreference resolution</label>
+
+            <input id="semanticAnno" name="semanticAnno" type="checkbox" 
+            onchange="checkBoxLocalStorage(this, 'semantic')"/>
+            <label for="semanticAnno">Semantic annotations</label>
+            
+            <input id="semanticNumber" name="semanticNumber" type="checkbox" 
+            onchange="checkBoxLocalStorage(this, 'semanticNumber')"/>
+            <label for="semanticNumber">Semantic number annotations </label>
+            <br>
+
+            <div class="error" id="requestError"></div>
+
+            <div class="button" role="button" aria-pressed="false" tabindex="0" id="" 
+            style="margin:auto" onclick="requestSend()">Send Request</div>
+         
+            <div class="button" role="button" aria-pressed="false" tabindex="0" id="apiModalClose" 
+            style="float:right" autofocus onclick="closeModal('ig2nlpAutomation')">Close</div>
+            </div>
+        </dialog>
+        
+        <!--
+        <dialog>
+            <h1 style="margin:auto">IG2NLP Automation response</h1>
+            
+            <h2>Regulative</h2>
+
+            <h2>Constitutive</h2>
+
+            <h2>Output</h2>
+
+            <div>Overwrite with text field</div>
+            <div>Overwrite with regulative output</div>
+            <div>Overwrite with constitutive output</div>
+        </dialog>
+        -->
 
         <!-- Hidden textarea that holds encoded statement; this is used for form submission -->
         <textarea id="codedStmt" name="codedStmt" onfocusin="check(this)" onkeyup="check(this)" style="display:none;">{{.CodedStmt}}</textarea><br />
