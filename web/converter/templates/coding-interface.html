@@ -462,6 +462,7 @@
                 requestError.innerHTML = "";
                 reqData = Object.create(null);
                 // Get contents of on-site elements
+                // stmtId is only available in the tabular version, default to empty if not assigned
                 try {
                     reqData["stmtId"] = document.getElementById("stmtId").value
                 }
@@ -469,21 +470,15 @@
                     reqData["stmtId"] = ""
                 }
                 reqData["origStmt"] = document.getElementById("rawStmt").value
-                //localStorage.getItem("rawStmt")
-
-                // get localstorage data
-                coref = localStorage.getItem("coref")
-                if (coref == "true") {coref = true} else {coref=false}
-                semantic = localStorage.getItem("semantic")
-                if (semantic == "true") {semantic = true} else {semantic=false}
-                semanticNumber = localStorage.getItem("semanticNumber")
-                if (semanticNumber == "true") {semanticNumber = true} else {semanticNumber=false}
 
                 // Set the matching parameters
                 reqData["matchingParams"] = {}
-                reqData["matchingParams"]["coref"] = coref
-                reqData["matchingParams"]["semantic"] = semantic
-                reqData["matchingParams"]["semanticNumber"] = semanticNumber
+                reqData["matchingParams"]["coref"] = 
+                  document.getElementById("corefRes").checked
+                reqData["matchingParams"]["semantic"] = 
+                  document.getElementById("semanticAnno").checked
+                reqData["matchingParams"]["semanticNumber"] = 
+                  document.getElementById("semanticNumber").checked
                 reqData["apiVersion"] = 0.1
                 reqData=[reqData]
 
