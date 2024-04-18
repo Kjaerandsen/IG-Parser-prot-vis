@@ -526,6 +526,7 @@
                         editor.setValue(response.jsonData[0]["encodedStmtReg"]);
                         // Ensure that content in hidden text area is synchronized
                         copyEditorContentToTextArea();
+                        saveFormContent();
                         if (response.jsonData[0]["commentReg"] != ""){
                             commentField.innerHTML = "Automation comment: " + 
                                 response.jsonData[0]["commentReg"];
@@ -537,6 +538,7 @@
                         editor.setValue(response.jsonData[0]["encodedStmtConst"]);
                         // Ensure that content in hidden text area is synchronized
                         copyEditorContentToTextArea();
+                        saveFormContent();
                         if (response.jsonData[0]["commentConst"] != ""){
                             commentField.innerHTML = "Automation comment: " + 
                                 response.jsonData[0]["commentConst"];
@@ -549,6 +551,7 @@
                         response.jsonData[0]["encodedStmtConst"]);
                         // Ensure that content in hidden text area is synchronized
                         copyEditorContentToTextArea();
+                        saveFormContent();
                         if (response.jsonData[0]["commentConst"] != "" || 
                             response.jsonData[0]["commentReg"] != "" ){
                             comment = ""
