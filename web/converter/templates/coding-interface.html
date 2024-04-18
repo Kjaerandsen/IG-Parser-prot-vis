@@ -304,16 +304,31 @@
                     // Toggle the editor buttons' visibility
                     for (let i = 0; i < buttons.length; i++) {
                         buttons[i].classList.remove('hidden');
-                        editor.session.setMode("ace/mode/igscriptnotation");
                     }
+                    editor.session.setMode("ace/mode/igscriptnotation");
                     localStorage.setItem("visual", "true");
                 } else {
                     // Toggle the editor buttons' visibility
                     for (let i = 0; i < buttons.length; i++) {
                         buttons[i].classList.add('hidden');
-                        editor.session.setMode("ace/mode/text");
                     }
+                    editor.session.setMode("ace/mode/text");
                     localStorage.setItem("visual", "false");
+                    // Turn off edit mode
+                    button = document.getElementById("lock");
+                    if (editor.getReadOnly()) {
+                        editor.setOption("readOnly", false);
+                        button.textContent = "Text mode";
+                        button.classList.toggle('toggleActive');
+                    }
+                    // Turn off selection mode
+                    if (selectionMode) {
+                        button = document.getElementById("selection")
+                        button.classList.toggle('toggleActive')
+                        button = document.getElementById(selectedSymbol)
+                        button.classList.toggle('toggleActive')
+                        selectionMode = !selectionMode
+                    }
                 }
             };
 
