@@ -428,7 +428,7 @@
                         break;
                 }
 
-                // Semantic Number Annotations
+                // Semantic Plural Singular Annotations
                 semanticNumber = localStorage.getItem("semanticNumber");
                 checkBox = document.getElementById("semanticNumber")
                 switch (semanticNumber) {
@@ -1125,7 +1125,7 @@
             
             <input id="semanticNumber" name="semanticNumber" type="checkbox" 
             onchange="checkBoxLocalStorage(this, 'semanticNumber')"/>
-            <label for="semanticNumber">Semantic number annotations </label>
+            <label for="semanticNumber">Semantic plural/singular entity annotations</label>
             <br>
 
             <div class="error" id="requestError"></div>
