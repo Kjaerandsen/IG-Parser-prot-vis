@@ -60,7 +60,12 @@
         <!-- Validate button -->
         <button class="button2" type="button" id="buttonValidate" switch="validate" onclick="checkRawStatementContent()">
             Validate 'Original Statement' input (checks for imbalanced parentheses)
-            and copy validated content into 'Encoded Statement' field</button></br></br>
+            and copy validated content into 'Encoded Statement' field</button><br>
+        
+        <!-- Comment out the section below and add double curly brackets before and after 
+             to include the automation interface (api integration) -->
+        <!-- template "automation-interface.html" .  //-->
+
         <script>
             /*
             Validates content of 'Original Statement' field by testing for imbalanced parentheses
@@ -294,23 +299,39 @@
 
             // Toggle button for visualization
             function visualToggle() {
-                visual = localStorage.getItem("visual")
-                console.log(localStorage.getItem("visual"))
-                buttons = document.getElementsByClassName("buttons")
-                if (visual == "false")
+                visual = localStorage.getItem("visual");
+                console.log(localStorage.getItem("visual"));
+                buttons = document.getElementsByClassName("buttons");
+                if (visual == "false") {
                     // Toggle the editor buttons' visibility
                     for (let i = 0; i < buttons.length; i++) {
-                        buttons[i].classList.remove('hidden')
-                        editor.session.setMode("ace/mode/igscriptnotation")
-                        localStorage.setItem("visual", "true")
+                        buttons[i].classList.remove('hidden');
                     }
-                else 
+                    editor.session.setMode("ace/mode/igscriptnotation");
+                    localStorage.setItem("visual", "true");
+                } else {
                     // Toggle the editor buttons' visibility
                     for (let i = 0; i < buttons.length; i++) {
-                        buttons[i].classList.add('hidden')
-                        editor.session.setMode("ace/mode/text");
-                        localStorage.setItem("visual", "false")
-                    }  
+                        buttons[i].classList.add('hidden');
+                    }
+                    editor.session.setMode("ace/mode/text");
+                    localStorage.setItem("visual", "false");
+                    // Turn off edit mode
+                    button = document.getElementById("lock");
+                    if (editor.getReadOnly()) {
+                        editor.setOption("readOnly", false);
+                        button.textContent = "Text mode";
+                        button.classList.toggle('toggleActive');
+                    }
+                    // Turn off selection mode
+                    if (selectionMode) {
+                        button = document.getElementById("selection")
+                        button.classList.toggle('toggleActive')
+                        button = document.getElementById(selectedSymbol)
+                        button.classList.toggle('toggleActive')
+                        selectionMode = !selectionMode
+                    }
+                }
             };
 
             // loading for visualization
@@ -716,13 +737,17 @@
                 link.href = window.location.pathname + linkParameter;
             }
 
-            // Keybinds for read only mode
+            // Keybinds
             document.addEventListener("keydown", function(event) {
                 // Enables the Enter key as an interact option for all divs with the "button" class
                 if (event.key == "Enter" && event.target.classList.contains("button")) {
                     event.target.click();
                     return
                 }
+                if (event.key == "Enter" && event.target.classList.contains("button")) {
+                     console.log(event.target, event.target.classList, event.target.classList.contains("button"))
+                }
+                // Keybinds for the editors "read only" mode
                 if (editor.getReadOnly()) {
                     // Enable undo and redo
                     if (event.ctrlKey || event.cmdKey) {

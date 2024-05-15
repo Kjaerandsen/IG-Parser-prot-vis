@@ -575,3 +575,18 @@ Modal styling (dialog html element for displaying information in the editor)
         display: none;
     }
 }
+
+.blueButton {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background: #0087cc;
+    font-size: 16px;
+    color: #fff;
+    cursor: pointer;
+    text-align: center;
+}
+
+.blueButton:hover {
+   background: #6eb8dd;
+}
